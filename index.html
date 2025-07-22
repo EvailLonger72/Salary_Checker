@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Enhanced viewport for mobile -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    
+    <!-- Mobile Web App capabilities -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="ShiftPay">
+    
+    <!-- Prevent format detection -->
+    <meta name="format-detection" content="telephone=no">
+    <meta name="format-detection" content="email=no">
+    
+    <!-- Theme colors for mobile browsers -->
+    <meta name="theme-color" content="#667eea">
+    <meta name="msapplication-navbutton-color" content="#667eea">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <!-- Favicon for mobile -->
+    <link rel="icon" type="image/png" sizes="192x192" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏭</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏭</text></svg>">
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js" as="script">
+    
+    <title>Shift Pay Calculator Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Critical CSS for mobile loading -->
+    <style>
+        /* Critical mobile loading styles */
+        body { 
+            margin: 0; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            -webkit-text-size-adjust: 100%;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .loading-spinner {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            display: none;
+        }
+        
+        /* Smooth scrolling for mobile */
+        * {
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* Touch improvements */
+        button, .nav-item, .stat-card {
+            -webkit-tap-highlight-color: rgba(0,0,0,0.1);
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Loading spinner for mobile -->
+    <div class="loading-spinner" id="loadingSpinner">
+        <div style="
+            width: 40px; 
+            height: 40px; 
+            border: 3px solid #f3f3f3; 
+            border-top: 3px solid #667eea; 
+            border-radius: 50%; 
+            animation: spin 1s linear infinite;
+        "></div>
+    </div>
+    
+    <!-- Mobile menu toggle will be inserted here by JavaScript -->
+    
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>🏭 ShiftPay</h2>
+                <p>Dashboard</p>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item active" data-page="dashboard">
+                    <span class="nav-icon">📊</span>
+                    Dashboard
+                </li>
+                <li class="nav-item" data-page="calculator">
+                    <span class="nav-icon">💰</span>
+                    Calculator
+                </li>
+                <li class="nav-item" data-page="weekly">
+                    <span class="nav-icon">📅</span>
+                    Weekly Report
+                </li>
+                <li class="nav-item" data-page="shifts">
+                    <span class="nav-icon">⏰</span>
+                    Shift Schedule
+                </li>
+                <li class="nav-item" data-page="settings">
+                    <span class="nav-icon">⚙️</span>
+                    Settings
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Page -->
+            <div id="dashboard" class="page active">
+                <div class="page-header">
+                    <div>
+                        <h1>Dashboard Overview</h1>
+                        <p>Welcome to your shift management system</p>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">💰</div>
+                        <div class="stat-content">
+                            <h3 id="totalEarnings">¥0</h3>
+                            <p>Total Earnings</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⏱️</div>
+                        <div class="stat-content">
+                            <h3 id="totalHours">0h</h3>
+                            <p>Total Hours</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📊</div>
+                        <div class="stat-content">
+                            <h3 id="averageDaily">¥0</h3>
+                            <p>Daily Average</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🎯</div>
+                        <div class="stat-content">
+                            <h3 id="weeklyGoal">75%</h3>
+                            <p>Weekly Goal</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-charts">
+                    <div class="chart-container">
+                        <h3>Weekly Earnings Trend</h3>
+                        <canvas id="dashboardChart"></canvas>
+                    </div>
+                    <div class="recent-shifts">
+                        <h3>Recent Shifts</h3>
+                        <div id="recentShiftsList" class="shifts-list"></div>
+                    </div>
+                </div>
+
+                <!-- NEW: Advanced Charts Section -->
+                <div class="advanced-charts-section">
+                    <div class="charts-grid">
+                        <!-- Monthly Comparison Chart -->
+                        <div class="chart-card">
+                            <h3>📈 Monthly Earnings Comparison</h3>
+                            <div class="chart-container">
+                                <canvas id="monthlyComparisonChart"></canvas>
+                            </div>
+                            <div class="stats-row">
+                                <div class="stat-item">
+                                    <div class="stat-value" id="currentMonthTotal">¥0</div>
+                                    <div class="stat-label">Current Month</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value" id="previousMonthTotal">¥0</div>
+                                    <div class="stat-label">Previous Month</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value growth-rate" id="growthRate">0%</div>
+                                    <div class="stat-label">Growth Rate</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Shift Pattern Heatmap -->
+                        <div class="chart-card">
+                            <h3>🗓️ Weekly Work Pattern</h3>
+                            <div class="chart-container heatmap-container">
+                                <canvas id="shiftHeatmapChart"></canvas>
+                            </div>
+                            <div class="stats-row">
+                                <div class="stat-item">
+                                    <div class="stat-value" id="peakHour">-</div>
+                                    <div class="stat-label">Peak Hour</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value" id="mostActiveDay">-</div>
+                                    <div class="stat-label">Most Active Day</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value" id="totalShifts">0</div>
+                                    <div class="stat-label">Total Shifts</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calculator Page -->
+            <div id="calculator" class="page">
+                <div class="page-header">
+                    <div>
+                        <h1>Pay Calculator</h1>
+                        <p>Calculate your shift earnings</p>
+                    </div>
+                </div>
+
+                <div class="calculator-container">
+                    <div class="form-section">
+                        <div class="form-group">
+                            <label for="shiftType">Shift Type</label>
+                            <select id="shiftType" onchange="updateShiftInfo()">
+                                <option value="">Select Shift Type</option>
+                                <option value="C341">C341 - Day Shift (06:30〜17:30)</option>
+                                <option value="C342">C342 - Night Shift (16:45〜01:25)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="startTime">Start Time</label>
+                                <input type="time" id="startTime">
+                            </div>
+                            <div class="form-group">
+                                <label for="endTime">End Time</label>
+                                <input type="time" id="endTime">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="workDate">Work Date</label>
+                            <input type="date" id="workDate">
+                        </div>
+
+                        <button class="calculate-btn" onclick="calculatePay()">
+                            <span>💰</span> Calculate Pay
+                        </button>
+                    </div>
+
+                    <div id="shiftInfo" class="shift-info" style="display: none;">
+                        <h4>📋 Break Schedule</h4>
+                        <div id="breakList" class="break-list"></div>
+                    </div>
+
+                    <div id="results" class="results-section" style="display: none;">
+                        <div class="result-card">
+                            <h3>💰 Pay Breakdown</h3>
+                            <div id="paySummary" class="pay-summary"></div>
+                        </div>
+
+                        <div class="charts-row">
+                            <div class="chart-wrapper">
+                                <h4>Working Time</h4>
+                                <canvas id="pieChart"></canvas>
+                            </div>
+                            <div class="chart-wrapper">
+                                <h4>Pay Distribution</h4>
+                                <canvas id="barChart"></canvas>
+                            </div>
+                        </div>
+
+                        <button class="add-btn" onclick="addToWeekly()">
+                            <span>➕</span> Add to Weekly Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Weekly Report Page -->
+            <div id="weekly" class="page">
+                <div class="page-header">
+                    <div>
+                        <h1>Weekly Report</h1>
+                        <p>Track your weekly performance</p>
+                    </div>
+                    <button class="clear-btn" onclick="clearWeekly()">Clear All</button>
+                </div>
+
+                <div id="weeklySummaryCards" class="weekly-summary"></div>
+                
+                <div class="weekly-content">
+                    <div class="weekly-list">
+                        <h3>Work Entries</h3>
+                        <div id="weeklyEntries" class="entries-list"></div>
+                    </div>
+                    <div class="weekly-chart">
+                        <h3>Weekly Performance</h3>
+                        <canvas id="weeklyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shift Schedule Page -->
+            <div id="shifts" class="page">
+                <div class="page-header">
+                    <div>
+                        <h1>Shift Schedules</h1>
+                        <p>View all available shift types and break schedules</p>
+                    </div>
+                </div>
+
+                <div class="shifts-grid">
+                    <div class="shift-card">
+                        <div class="shift-header">
+                            <h3>C341 - Day Shift</h3>
+                            <span class="shift-time">06:30 〜 17:30</span>
+                        </div>
+                        <div class="shift-details">
+                            <p><strong>Total Duration:</strong> 11 hours</p>
+                            <p><strong>Net Working:</strong> 9h 20m</p>
+                            <p><strong>Break Time:</strong> 1h 40m</p>
+                        </div>
+                        <div class="break-schedule">
+                            <h4>Break Schedule:</h4>
+                            <div class="breaks-grid">
+                                <div class="break-item">08:30〜08:40 <span>10m</span></div>
+                                <div class="break-item">10:40〜11:25 <span>45m</span></div>
+                                <div class="break-item">13:05〜13:15 <span>10m</span></div>
+                                <div class="break-item">14:35〜14:45 <span>10m</span></div>
+                                <div class="break-item">16:10〜16:20 <span>10m</span></div>
+                                <div class="break-item">17:20〜17:35 <span>15m</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="shift-card">
+                        <div class="shift-header">
+                            <h3>C342 - Night Shift</h3>
+                            <span class="shift-time">16:45 〜 01:25</span>
+                        </div>
+                        <div class="shift-details">
+                            <p><strong>Total Duration:</strong> 8h 40m</p>
+                            <p><strong>Net Working:</strong> 7h</p>
+                            <p><strong>Break Time:</strong> 1h 40m</p>
+                        </div>
+                        <div class="break-schedule">
+                            <h4>Break Schedule:</h4>
+                            <div class="breaks-grid">
+                                <div class="break-item">18:45〜18:55 <span>10m</span></div>
+                                <div class="break-item">20:55〜21:40 <span>45m</span></div>
+                                <div class="break-item">23:10〜23:20 <span>10m</span></div>
+                                <div class="break-item">00:50〜01:00 <span>10m</span></div>
+                                <div class="break-item">02:25〜02:35 <span>10m</span></div>
+                                <div class="break-item">03:35〜03:50 <span>15m</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pay-rates-card">
+                    <h3>💰 Pay Rate Information</h3>
+                    <div class="rates-grid">
+                        <div class="rate-item">
+                            <h4>⏰ Regular Hours</h4>
+                            <p>First 7h 35m: <strong>¥2,100/hour</strong></p>
+                        </div>
+                        <div class="rate-item">
+                            <h4>⚡ Overtime</h4>
+                            <p>After 7h 35m: <strong>¥2,625/hour</strong></p>
+                        </div>
+                        <div class="rate-item">
+                            <h4>🌙 Night Premium</h4>
+                            <p>After 22:00: <strong>¥2,625/hour</strong></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Page -->
+            <div id="settings" class="page">
+                <div class="page-header">
+                    <div>
+                        <h1>Settings</h1>
+                        <p>Customize your application preferences</p>
+                    </div>
+                </div>
+
+                <div class="settings-container">
+                    <div class="setting-group">
+                        <h3>💰 Pay Rates</h3>
+                        <div class="setting-item">
+                            <label for="baseRate">Base Hourly Rate (¥)</label>
+                            <input type="number" id="baseRate" value="2100" min="1000" max="5000">
+                        </div>
+                        <div class="setting-item">
+                            <label for="overtimeRate">Overtime/Night Rate (¥)</label>
+                            <input type="number" id="overtimeRate" value="2625" min="1000" max="10000">
+                        </div>
+                    </div>
+
+                    <div class="setting-group">
+                        <h3>🎯 Goals</h3>
+                        <div class="setting-item">
+                            <label for="weeklyGoalHours">Weekly Goal (Hours)</label>
+                            <input type="number" id="weeklyGoalHours" value="40" min="1" max="80">
+                        </div>
+                        <div class="setting-item">
+                            <label for="weeklyGoalPay">Weekly Goal (¥)</label>
+                            <input type="number" id="weeklyGoalPay" value="100000" min="10000" max="500000">
+                        </div>
+                    </div>
+
+                    <div class="setting-group">
+                        <h3>📊 Data Management</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+                            <button class="export-btn" onclick="exportData()">
+                                📊 Export CSV
+                            </button>
+                            <button class="export-btn" onclick="exportSummaryData()">
+                                📈 Export Summary
+                            </button>
+                            <button class="import-btn" onclick="importCSV()">
+                                📥 Import CSV
+                            </button>
+                        </div>
+                        <p style="margin-top: 15px; color: #666; font-size: 0.9rem;">
+                            💡 CSV format is compatible with Excel and Google Sheets<br>
+                            JSON format preserves all data for backup/restore
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Enhanced script loading for mobile -->
+    <script>
+        // Show loading spinner on mobile
+        if (window.innerWidth <= 768) {
+            document.getElementById('loadingSpinner').style.display = 'block';
+        }
+        
+        // Hide loading spinner when everything is loaded
+        window.addEventListener('load', function() {
+            document.getElementById('loadingSpinner').style.display = 'none';
+        });
+        
+        // Prevent zoom on double tap (iOS)
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function (event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+        
+        // Add touch class to body if touch device
+        if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+            document.body.classList.add('touch-device');
+        }
+    </script>
+
+    <!-- Load external scripts -->
+    <script src="break_schedule.js"></script>
+    <script src="script.js"></script>
+    <script src="chart.js"></script>
+    
+    <!-- Force navigation binding -->
+    <script>
+        // Backup navigation function
+        function forceNavigationSetup() {
+            console.log('Setting up backup navigation...');
+            const navItems = document.querySelectorAll('.nav-item');
+            const pages = document.querySelectorAll('.page');
+            
+            navItems.forEach((item, index) => {
+                // Remove any existing listeners first
+                const newItem = item.cloneNode(true);
+                item.parentNode.replaceChild(newItem, item);
+                
+                newItem.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const targetPage = newItem.getAttribute('data-page');
+                    console.log('Force navigation to:', targetPage);
+                    
+                    // Update active nav item
+                    document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                    newItem.classList.add('active');
+                    
+                    // Show target page
+                    document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+                    const targetPageElement = document.getElementById(targetPage);
+                    if (targetPageElement) {
+                        targetPageElement.classList.add('active');
+                    }
+                    
+                    // Update page content
+                    if (targetPage === 'dashboard' && typeof updateDashboard === 'function') {
+                        updateDashboard();
+                    } else if (targetPage === 'weekly' && typeof updateWeeklyDisplay === 'function') {
+                        updateWeeklyDisplay();
+                        if (typeof updateWeeklyChart === 'function') {
+                            updateWeeklyChart();
+                        }
+                    }
+                });
+            });
+        }
+        
+        // Try multiple times to ensure setup
+        setTimeout(forceNavigationSetup, 100);
+        setTimeout(forceNavigationSetup, 500);
+        setTimeout(forceNavigationSetup, 1000);
+    </script>
+    
+    <script>
+        // Override displayResults function to integrate with charts
+        function displayResults(calc) {
+            const resultsSection = document.getElementById('results');
+            const paySummary = document.getElementById('paySummary');
+
+            let summaryHTML = `
+                <div class="pay-item">
+                    <div class="label">Total Hours</div>
+                    <div class="value">${(calc.workingTime.totalMinutes / 60).toFixed(2)}h</div>
+                </div>
+                <div class="pay-item">
+                    <div class="label">Break Time</div>
+                    <div class="value">${(calc.workingTime.breakMinutes / 60).toFixed(2)}h</div>
+                </div>
+                <div class="pay-item">
+                    <div class="label">Net Working</div>
+                    <div class="value">${calc.workingTime.netHours.toFixed(2)}h</div>
+                </div>
+                <div class="pay-item">
+                    <div class="label">Regular Pay</div>
+                    <div class="value">¥${Math.round(calc.payInfo.regularPay)}</div>
+                </div>
+            `;
+
+            if (calc.payInfo.overtimeHours > 0) {
+                summaryHTML += `
+                    <div class="pay-item">
+                        <div class="label">Overtime Pay</div>
+                        <div class="value">¥${Math.round(calc.payInfo.overtimePay)}</div>
+                    </div>
+                `;
+            }
+
+            if (calc.payInfo.hasNightHours) {
+                summaryHTML += `
+                    <div class="pay-item">
+                        <div class="label">Night Premium</div>
+                        <div class="value">¥${Math.round(calc.payInfo.nightPay)}</div>
+                    </div>
+                `;
+            }
+
+            summaryHTML += `
+                <div class="pay-item">
+                    <div class="label">Total Pay</div>
+                    <div class="value">¥${Math.round(calc.payInfo.totalPay)}</div>
+                </div>
+            `;
+
+            paySummary.innerHTML = summaryHTML;
+            resultsSection.style.display = 'block';
+            
+            // Create charts for the calculation
+            if (typeof createCalculatorCharts === 'function') {
+                createCalculatorCharts(calc);
+            }
+            
+            // Scroll to results
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Initialize app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing app...');
+            
+            // Check if all required scripts are loaded
+            if (typeof SHIFTS === 'undefined') {
+                console.error('break_schedule.js not loaded - SHIFTS undefined');
+                alert('Error: Break schedule data not loaded. Please refresh the page.');
+                return;
+            }
+            
+            if (typeof updateDashboard === 'undefined') {
+                console.error('script.js not loaded - updateDashboard undefined');
+                alert('Error: Main script not loaded. Please refresh the page.');
+                return;
+            }
+            
+            if (typeof createCalculatorCharts === 'undefined') {
+                console.error('chart.js not loaded - createCalculatorCharts undefined');
+                alert('Error: Chart functions not loaded. Please refresh the page.');
+                return;
+            }
+            
+            console.log('All scripts loaded successfully');
+            
+            // Initialize navigation and dashboard
+            try {
+                if (typeof initializeNavigation === 'function') {
+                    initializeNavigation();
+                    console.log('Navigation initialized');
+                }
+                
+                if (typeof updateDashboard === 'function') {
+                    updateDashboard();
+                    console.log('Dashboard updated');
+                }
+                
+                if (typeof updateWeeklyDisplay === 'function') {
+                    updateWeeklyDisplay();
+                    console.log('Weekly display updated');
+                }
+                
+                if (typeof loadSettings === 'function') {
+                    loadSettings();
+                    console.log('Settings loaded');
+                }
+                
+                if (typeof setTodayDate === 'function') {
+                    setTodayDate();
+                    console.log('Today date set');
+                }
+                
+                // Initialize mobile features if available
+                if (typeof initializeMobileFeatures === 'function') {
+                    initializeMobileFeatures();
+                    console.log('Mobile features initialized');
+                }
+                
+                console.log('App initialization complete!');
+            } catch (error) {
+                console.error('Error during initialization:', error);
+                alert('Error initializing app: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>
