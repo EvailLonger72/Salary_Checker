@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar View - Shift Pay Calculator</title>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="calendar-styles.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="192x192" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
+    
+    <!-- Preload Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>🏭 ShiftPay</h2>
+                <p>Calendar View</p>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item" onclick="window.location.href='index.html#dashboard'">
+                    <span class="nav-icon">📊</span>
+                    Dashboard
+                </li>
+                <li class="nav-item" onclick="window.location.href='index.html#calculator'">
+                    <span class="nav-icon">💰</span>
+                    Calculator
+                </li>
+                <li class="nav-item" onclick="window.location.href='index.html#weekly'">
+                    <span class="nav-icon">📅</span>
+                    Weekly Report
+                </li>
+                <li class="nav-item active">
+                    <span class="nav-icon">🗓️</span>
+                    Calendar View
+                </li>
+                <li class="nav-item" onclick="window.location.href='tax-calculator.html'">
+                    <span class="nav-icon">🧮</span>
+                    Tax Calculator
+                </li>
+                <li class="nav-item" onclick="window.location.href='index.html#shifts'">
+                    <span class="nav-icon">⏰</span>
+                    Shift Schedule
+                </li>
+                <li class="nav-item" onclick="window.location.href='index.html#settings'">
+                    <span class="nav-icon">⚙️</span>
+                    Settings
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <div>
+                    <h1>Calendar View</h1>
+                    <p>Visualize your shifts and plan ahead</p>
+                </div>
+                <div class="header-actions">
+                    <button class="view-toggle-btn active" data-view="month">Month</button>
+                    <button class="view-toggle-btn" data-view="week">Week</button>
+                    <button class="export-btn" onclick="exportCalendar()">📤 Export</button>
+                </div>
+            </div>
+
+            <!-- Calendar Controls -->
+            <div class="calendar-controls">
+                <button class="nav-btn" onclick="navigateCalendar('prev')">
+                    <span>◀</span>
+                </button>
+                <div class="current-period">
+                    <h2 id="currentPeriod">January 2025</h2>
+                </div>
+                <button class="nav-btn" onclick="navigateCalendar('next')">
+                    <span>▶</span>
+                </button>
+                <button class="today-btn" onclick="goToToday()">Today</button>
+            </div>
+
+            <!-- Calendar Grid -->
+            <div class="calendar-container">
+                <div id="calendarGrid" class="calendar-grid month-view">
+                    <!-- Calendar will be generated here -->
+                </div>
+            </div>
+
+            <!-- Legend -->
+            <div class="calendar-legend">
+                <div class="legend-item">
+                    <span class="legend-color day-shift"></span>
+                    <span>Day Shift (C341)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color night-shift"></span>
+                    <span>Night Shift (C342)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color overtime"></span>
+                    <span>Overtime</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color holiday"></span>
+                    <span>Holiday/Weekend</span>
+                </div>
+            </div>
+
+            <!-- Monthly Summary -->
+            <div class="monthly-summary">
+                <h3>Monthly Summary</h3>
+                <div class="summary-grid">
+                    <div class="summary-card">
+                        <div class="summary-icon">📅</div>
+                        <div class="summary-content">
+                            <h4 id="totalDays">0</h4>
+                            <p>Days Worked</p>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-icon">⏱️</div>
+                        <div class="summary-content">
+                            <h4 id="totalHours">0h</h4>
+                            <p>Total Hours</p>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-icon">💰</div>
+                        <div class="summary-content">
+                            <h4 id="totalEarnings">¥0</h4>
+                            <p>Total Earnings</p>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-icon">📊</div>
+                        <div class="summary-content">
+                            <h4 id="avgDaily">¥0</h4>
+                            <p>Daily Average</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Future Shift Planning (Optional) -->
+            <div class="shift-planning">
+                <h3>Quick Add Shift</h3>
+                <div class="quick-add-form">
+                    <input type="date" id="planDate" class="plan-input">
+                    <select id="planShiftType" class="plan-input">
+                        <option value="">Select Shift</option>
+                        <option value="C341">C341 - Day Shift</option>
+                        <option value="C342">C342 - Night Shift</option>
+                    </select>
+                    <button class="add-plan-btn" onclick="quickAddShift()">+ Add to Calendar</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Shift Details Modal -->
+    <div id="shiftModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3>Shift Details</h3>
+            <div id="modalContent">
+                <!-- Shift details will be displayed here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile menu toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">☰</button>
+    <div class="mobile-overlay" onclick="closeMobileMenu()"></div>
+
+    <!-- Scripts -->
+    <script src="break_schedule.js"></script>
+    <script src="calendar.js"></script>
+    
+    <script>
+        // Initialize calendar on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCalendar();
+        });
+
+        // Mobile menu functions
+        function toggleMobileMenu() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.mobile-overlay');
+            const toggle = document.querySelector('.mobile-menu-toggle');
+            
+            sidebar.classList.toggle('mobile-open');
+            overlay.classList.toggle('active');
+            toggle.innerHTML = sidebar.classList.contains('mobile-open') ? '✕' : '☰';
+        }
+
+        function closeMobileMenu() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.mobile-overlay');
+            const toggle = document.querySelector('.mobile-menu-toggle');
+            
+            sidebar.classList.remove('mobile-open');
+            overlay.classList.remove('active');
+            toggle.innerHTML = '☰';
+        }
+    </script>
+</body>
+</html>

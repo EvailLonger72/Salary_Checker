@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tax Calculator - Shift Pay Calculator</title>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="tax-calculator-styles.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="192x192" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧮</text></svg>">
+    
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>🏭 ShiftPay</h2>
+                <p>Tax Calculator</p>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item" onclick="window.location.href='index.html#dashboard'">
+                    <span class="nav-icon">📊</span>
+                    Dashboard
+                </li>
+                <li class="nav-item" onclick="window.location.href='index.html#calculator'">
+                    <span class="nav-icon">💰</span>
+                    Calculator
+                </li>
+                <li class="nav-item" onclick="window.location.href='index.html#weekly'">
+                    <span class="nav-icon">📅</span>
+                    Weekly Report
+                </li>
+                <li class="nav-item" onclick="window.location.href='calendar.html'">
+                    <span class="nav-icon">🗓️</span>
+                    Calendar View
+                </li>
+                <li class="nav-item active">
+                    <span class="nav-icon">🧮</span>
+                    Tax Calculator
+                </li>
+                <li class="nav-item" onclick="window.location.href='index.html#shifts'">
+                    <span class="nav-icon">⏰</span>
+                    Shift Schedule
+                </li>
+                <li class="nav-item" onclick="window.location.href='index.html#settings'">
+                    <span class="nav-icon">⚙️</span>
+                    Settings
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <div>
+                    <h1>Tax Calculator</h1>
+                    <p>Calculate your take-home pay after Japanese taxes and deductions</p>
+                </div>
+                <div class="header-actions">
+                    <button class="period-toggle-btn active" data-period="monthly">Monthly</button>
+                    <button class="period-toggle-btn" data-period="yearly">Yearly</button>
+                    <button class="export-btn" onclick="exportTaxReport()">📤 Export Report</button>
+                </div>
+            </div>
+
+            <!-- Tax Calculator Form -->
+            <div class="tax-form-container">
+                <div class="form-card">
+                    <h3>💰 Income Information</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="grossIncome">Gross Income (¥)</label>
+                            <input type="number" id="grossIncome" placeholder="Enter gross income">
+                            <small>Your total income before any deductions</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="incomeSource">Income Source</label>
+                            <select id="incomeSource">
+                                <option value="employment">Employment Income</option>
+                                <option value="part-time">Part-time/Arbeit</option>
+                                <option value="contract">Contract Work</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="quick-fill-buttons">
+                        <p>Quick fill from your data:</p>
+                        <button class="quick-fill-btn" onclick="fillLastMonth()">Last Month</button>
+                        <button class="quick-fill-btn" onclick="fillThisMonth()">This Month</button>
+                        <button class="quick-fill-btn" onclick="fillLastYear()">Last Year Total</button>
+                    </div>
+                </div>
+
+                <div class="form-card">
+                    <h3>👤 Personal Information</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="age">Age</label>
+                            <input type="number" id="age" placeholder="Your age" value="25">
+                        </div>
+                        <div class="form-group">
+                            <label for="dependents">Number of Dependents</label>
+                            <input type="number" id="dependents" placeholder="0" value="0">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="prefecture">Prefecture</label>
+                            <select id="prefecture">
+                                <option value="tokyo">Tokyo</option>
+                                <option value="osaka">Osaka</option>
+                                <option value="oita" selected>Oita</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="status">Filing Status</label>
+                            <select id="status">
+                                <option value="single">Single</option>
+                                <option value="married">Married</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="calculate-tax-btn" onclick="calculateTax()">
+                    <span>🧮</span> Calculate Tax
+                </button>
+            </div>
+
+            <!-- Tax Results -->
+            <div id="taxResults" class="tax-results" style="display: none;">
+                <div class="results-header">
+                    <h2>Tax Calculation Results</h2>
+                    <p id="resultsPeriod">Monthly Breakdown</p>
+                </div>
+
+                <!-- Take-home Pay Summary -->
+                <div class="take-home-summary">
+                    <div class="take-home-card">
+                        <h3>💸 Take-Home Pay</h3>
+                        <div class="take-home-amount" id="takeHomeAmount">¥0</div>
+                        <div class="take-home-percentage" id="takeHomePercentage">0% of gross</div>
+                    </div>
+                </div>
+
+                <!-- Deductions Breakdown -->
+                <div class="deductions-container">
+                    <h3>📊 Deductions Breakdown</h3>
+                    <div class="deductions-grid">
+                        <div class="deduction-card">
+                            <div class="deduction-icon">🏛️</div>
+                            <div class="deduction-content">
+                                <h4>Income Tax</h4>
+                                <p class="deduction-amount" id="incomeTax">¥0</p>
+                                <p class="deduction-rate" id="incomeTaxRate">0%</p>
+                            </div>
+                        </div>
+                        <div class="deduction-card">
+                            <div class="deduction-icon">🏘️</div>
+                            <div class="deduction-content">
+                                <h4>Resident Tax</h4>
+                                <p class="deduction-amount" id="residentTax">¥0</p>
+                                <p class="deduction-rate">~10%</p>
+                            </div>
+                        </div>
+                        <div class="deduction-card">
+                            <div class="deduction-icon">🏥</div>
+                            <div class="deduction-content">
+                                <h4>Health Insurance</h4>
+                                <p class="deduction-amount" id="healthInsurance">¥0</p>
+                                <p class="deduction-rate" id="healthInsuranceRate">0%</p>
+                            </div>
+                        </div>
+                        <div class="deduction-card">
+                            <div class="deduction-icon">👴</div>
+                            <div class="deduction-content">
+                                <h4>Pension</h4>
+                                <p class="deduction-amount" id="pension">¥0</p>
+                                <p class="deduction-rate">9.15%</p>
+                            </div>
+                        </div>
+                        <div class="deduction-card">
+                            <div class="deduction-icon">💼</div>
+                            <div class="deduction-content">
+                                <h4>Employment Insurance</h4>
+                                <p class="deduction-amount" id="employmentInsurance">¥0</p>
+                                <p class="deduction-rate">0.3%</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visual Breakdown Chart -->
+                <div class="chart-container">
+                    <h3>💹 Income Distribution</h3>
+                    <canvas id="taxChart"></canvas>
+                </div>
+
+                <!-- Comparison Table -->
+                <div class="comparison-table">
+                    <h3>📋 Detailed Breakdown</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Monthly</th>
+                                <th>Yearly</th>
+                                <th>% of Gross</th>
+                            </tr>
+                        </thead>
+                        <tbody id="comparisonTableBody">
+                            <!-- Table rows will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Tax Tips -->
+                <div class="tax-tips">
+                    <h3>💡 Tax Saving Tips</h3>
+                    <div class="tips-grid">
+                        <div class="tip-card">
+                            <h4>🏠 Housing Deduction</h4>
+                            <p>If you're paying rent, you may be eligible for rent deduction.</p>
+                        </div>
+                        <div class="tip-card">
+                            <h4>🏥 Medical Expenses</h4>
+                            <p>Medical expenses over ¥100,000 per year can be deducted.</p>
+                        </div>
+                        <div class="tip-card">
+                            <h4>📚 Life Insurance</h4>
+                            <p>Life insurance premiums can reduce your taxable income.</p>
+                        </div>
+                        <div class="tip-card">
+                            <h4>🎯 Year-end Adjustment</h4>
+                            <p>Submit your 年末調整 (nenmatsu chōsei) for tax refunds.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Mobile menu toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">☰</button>
+    <div class="mobile-overlay" onclick="closeMobileMenu()"></div>
+
+    <!-- Scripts -->
+    <script src="tax-calculator.js"></script>
+    
+    <script>
+        // Initialize tax calculator on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeTaxCalculator();
+        });
+
+        // Mobile menu functions
+        function toggleMobileMenu() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.mobile-overlay');
+            const toggle = document.querySelector('.mobile-menu-toggle');
+            
+            sidebar.classList.toggle('mobile-open');
+            overlay.classList.toggle('active');
+            toggle.innerHTML = sidebar.classList.contains('mobile-open') ? '✕' : '☰';
+        }
+
+        function closeMobileMenu() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.mobile-overlay');
+            const toggle = document.querySelector('.mobile-menu-toggle');
+            
+            sidebar.classList.remove('mobile-open');
+            overlay.classList.remove('active');
+            toggle.innerHTML = '☰';
+        }
+    </script>
+</body>
+</html>

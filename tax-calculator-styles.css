@@ -1,0 +1,501 @@
+/* tax-calculator-styles.css - Tax Calculator Specific Styles */
+
+/* Tax Form Container */
+.tax-form-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.form-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    padding: 30px;
+    border-radius: 20px;
+    margin-bottom: 25px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.form-card h3 {
+    margin-bottom: 25px;
+    color: #333;
+    font-size: 1.3rem;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 15px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 15px 20px;
+    border: 2px solid #e1e5e9;
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #4facfe;
+    box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+}
+
+.form-group small {
+    display: block;
+    margin-top: 5px;
+    color: #666;
+    font-size: 0.85rem;
+}
+
+/* Quick Fill Buttons */
+.quick-fill-buttons {
+    margin-top: 20px;
+}
+
+.quick-fill-buttons p {
+    margin-bottom: 10px;
+    color: #666;
+    font-weight: 500;
+}
+
+.quick-fill-btn {
+    background: #e0e0e0;
+    color: #333;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.quick-fill-btn:hover {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Calculate Button */
+.calculate-tax-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 18px 30px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 30px auto;
+    max-width: 400px;
+}
+
+.calculate-tax-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+}
+
+/* Header Actions */
+.header-actions {
+    display: flex;
+    gap: 15px;
+}
+
+.period-toggle-btn {
+    background: #e0e0e0;
+    color: #666;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.period-toggle-btn.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.period-toggle-btn:hover:not(.active) {
+    background: #d0d0d0;
+}
+
+/* Tax Results */
+.tax-results {
+    margin-top: 40px;
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.results-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.results-header h2 {
+    color: #333;
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+.results-header p {
+    color: #666;
+    font-size: 1.1rem;
+}
+
+/* Take-home Summary */
+.take-home-summary {
+    margin-bottom: 40px;
+}
+
+.take-home-card {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    padding: 40px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 15px 40px rgba(40, 167, 69, 0.3);
+}
+
+.take-home-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    opacity: 0.95;
+}
+
+.take-home-amount {
+    font-size: 3.5rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.take-home-percentage {
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+/* Deductions Container */
+.deductions-container {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    padding: 30px;
+    border-radius: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.deductions-container h3 {
+    margin-bottom: 25px;
+    color: #333;
+    font-size: 1.3rem;
+}
+
+.deductions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.deduction-card {
+    background: #f8f9fa;
+    padding: 25px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    transition: all 0.3s ease;
+}
+
+.deduction-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.deduction-icon {
+    font-size: 2.5rem;
+}
+
+.deduction-content h4 {
+    color: #666;
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+}
+
+.deduction-amount {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #dc3545;
+    margin-bottom: 5px;
+}
+
+.deduction-rate {
+    font-size: 0.9rem;
+    color: #999;
+}
+
+/* Chart Container */
+.chart-container {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    padding: 30px;
+    border-radius: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.chart-container h3 {
+    margin-bottom: 25px;
+    color: #333;
+    font-size: 1.3rem;
+}
+
+#taxChart {
+    max-height: 400px;
+}
+
+/* Comparison Table */
+.comparison-table {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    padding: 30px;
+    border-radius: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    overflow-x: auto;
+}
+
+.comparison-table h3 {
+    margin-bottom: 25px;
+    color: #333;
+    font-size: 1.3rem;
+}
+
+.comparison-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.comparison-table th,
+.comparison-table td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.comparison-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #333;
+}
+
+.comparison-table tr:hover {
+    background: #f8f9fa;
+}
+
+.comparison-table .total-row {
+    font-weight: 600;
+    background: #e3f2fd;
+}
+
+.comparison-table .total-row td {
+    border-top: 2px solid #2196f3;
+}
+
+/* Tax Tips */
+.tax-tips {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.tax-tips h3 {
+    margin-bottom: 25px;
+    color: #333;
+    font-size: 1.3rem;
+}
+
+.tips-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.tip-card {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    padding: 20px;
+    border-radius: 15px;
+    border-left: 5px solid #2196f3;
+}
+
+.tip-card h4 {
+    margin-bottom: 10px;
+    color: #1976d2;
+}
+
+.tip-card p {
+    color: #333;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .form-card {
+        padding: 20px;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .header-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .period-toggle-btn,
+    .export-btn {
+        width: 100%;
+    }
+    
+    .take-home-card {
+        padding: 30px 20px;
+    }
+    
+    .take-home-amount {
+        font-size: 2.5rem;
+    }
+    
+    .deductions-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .deduction-card {
+        padding: 20px;
+    }
+    
+    .deduction-amount {
+        font-size: 1.5rem;
+    }
+    
+    .comparison-table {
+        padding: 20px;
+    }
+    
+    .comparison-table table {
+        font-size: 0.9rem;
+    }
+    
+    .comparison-table th,
+    .comparison-table td {
+        padding: 10px;
+    }
+    
+    .tips-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .quick-fill-btn {
+        display: block;
+        width: 100%;
+        margin-right: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .take-home-card h3 {
+        font-size: 1.2rem;
+    }
+    
+    .take-home-amount {
+        font-size: 2rem;
+    }
+    
+    .take-home-percentage {
+        font-size: 1rem;
+    }
+    
+    .deduction-icon {
+        font-size: 2rem;
+    }
+    
+    .deduction-content h4 {
+        font-size: 0.85rem;
+    }
+    
+    .deduction-amount {
+        font-size: 1.2rem;
+    }
+    
+    .comparison-table {
+        padding: 15px;
+    }
+    
+    .comparison-table table {
+        font-size: 0.8rem;
+    }
+    
+    #taxChart {
+        max-height: 300px;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .header-actions,
+    .quick-fill-buttons,
+    .calculate-tax-btn,
+    .mobile-menu-toggle,
+    .sidebar {
+        display: none;
+    }
+    
+    .main-content {
+        margin: 0;
+        padding: 20px;
+    }
+    
+    .tax-results {
+        page-break-inside: avoid;
+    }
+    
+    .deduction-card,
+    .tip-card {
+        break-inside: avoid;
+    }
+}
