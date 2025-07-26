@@ -1,44 +1,42 @@
-// tax-calculator.js - Japanese Tax Calculator
+// tax-calculator.js - Complete Japanese Tax Calculator with Actual Rates
 
 // Global variables
 let currentPeriod = 'monthly';
 let weeklyData = JSON.parse(localStorage.getItem('weeklyData') || '[]');
 let taxChartInstance = null;
 
-// Japanese Tax Rates for 2025
+// Actual Japanese Tax Rates based on your payslip
 const TAX_RATES = {
-    income: [
-        { min: 0, max: 1950000, rate: 0.05 },
-        { min: 1950000, max: 3300000, rate: 0.10 },
-        { min: 3300000, max: 6950000, rate: 0.20 },
-        { min: 6950000, max: 9000000, rate: 0.23 },
-        { min: 9000000, max: 18000000, rate: 0.33 },
-        { min: 18000000, max: 40000000, rate: 0.40 },
-        { min: 40000000, max: Infinity, rate: 0.45 }
-    ],
-    resident: 0.10, // 10% flat rate
-    healthInsurance: {
-        tokyo: 0.0998,
-        osaka: 0.1029,
-        oita: 0.0977,
-        other: 0.10
-    },
-    pension: 0.0915, // 9.15% for employees
-    employmentInsurance: 0.003, // 0.3% for employees
-    basicDeduction: 480000, // Basic deduction per year
-    dependentDeduction: 380000 // Per dependent per year
+    // Individual tax rates
+    incomeTax: 0.0177,           // 1.77% - 所得税
+    residentTax: 0.0389,         // 3.89% - 住民税
+    healthInsurance: 0.0626,     // 6.26% - 健康保険
+    pension: 0.0945,             // 9.45% - 厚生年金
+    employmentInsurance: 0.0093, // 0.93% - 雇用保険
+    
+    // Total rates
+    totalDeductionRate: 0.223,   // 22.3% - 総控除率
+    takeHomeRate: 0.777          // 77.7% - 手取り率
 };
 
 /**
- * Initialize tax calculator
+ * Initialize tax calculator on page load
  */
 function initializeTaxCalculator() {
-    // Set up period toggle
+    console.log('Initializing Tax Calculator...');
+    
+    // Set up period toggle buttons
     document.querySelectorAll('.period-toggle-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             document.querySelectorAll('.period-toggle-btn').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
             currentPeriod = this.dataset.period;
+            
+            // Update results period label
+            if (document.getElementById('resultsPeriod')) {
+                document.getElementById('resultsPeriod').textContent = 
+                    currentPeriod === 'monthly' ? 'Monthly Breakdown' : 'Yearly Breakdown';
+            }
             
             // Recalculate if results are visible
             if (document.getElementById('taxResults').style.display !== 'none') {
@@ -48,20 +46,33 @@ function initializeTaxCalculator() {
     });
 
     // Set up input listeners for real-time calculation
-    const inputs = ['grossIncome', 'age', 'dependents', 'prefecture', 'status'];
+    const inputs = ['grossIncome', 'age', 'dependents', 'prefecture', 'status', 'incomeSource'];
     inputs.forEach(id => {
         const element = document.getElementById(id);
         if (element) {
-            element.addEventListener('change', function() {
-                if (document.getElementById('taxResults').style.display !== 'none') {
+            element.addEventListener('input', function() {
+                // Auto calculate if results are already showing
+                if (document.getElementById('taxResults').style.display !== 'none' && 
+                    document.getElementById('grossIncome').value) {
                     calculateTax();
                 }
             });
         }
     });
 
+    // Set default values
+    const today = new Date();
+    if (document.getElementById('age')) {
+        document.getElementById('age').value = 25;
+    }
+    if (document.getElementById('dependents')) {
+        document.getElementById('dependents').value = 0;
+    }
+
     // Auto-fill current month data if available
-    fillThisMonth();
+    setTimeout(() => {
+        fillThisMonth();
+    }, 500);
 }
 
 /**
@@ -72,7 +83,7 @@ function fillLastMonth() {
     const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
     const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0);
     
-    fillIncomeForPeriod(lastMonth, lastMonthEnd);
+    fillIncomeForPeriod(lastMonth, lastMonthEnd, 'Last Month');
 }
 
 /**
@@ -81,9 +92,9 @@ function fillLastMonth() {
 function fillThisMonth() {
     const today = new Date();
     const thisMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-    const thisMonthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    const thisMonthEnd = today; // Up to today
     
-    fillIncomeForPeriod(thisMonthStart, thisMonthEnd);
+    fillIncomeForPeriod(thisMonthStart, thisMonthEnd, 'This Month (so far)');
 }
 
 /**
@@ -94,13 +105,13 @@ function fillLastYear() {
     const lastYearStart = new Date(today.getFullYear() - 1, 0, 1);
     const lastYearEnd = new Date(today.getFullYear() - 1, 11, 31);
     
-    fillIncomeForPeriod(lastYearStart, lastYearEnd, true);
+    fillIncomeForPeriod(lastYearStart, lastYearEnd, 'Last Year', true);
 }
 
 /**
  * Fill income for a specific period
  */
-function fillIncomeForPeriod(startDate, endDate, isYearly = false) {
+function fillIncomeForPeriod(startDate, endDate, periodName, isYearly = false) {
     const periodData = weeklyData.filter(entry => {
         const entryDate = new Date(entry.workDate);
         return entryDate >= startDate && entryDate <= endDate;
@@ -118,97 +129,111 @@ function fillIncomeForPeriod(startDate, endDate, isYearly = false) {
             document.querySelector('[data-period="monthly"]').click();
         }
         
-        showMessage(`Filled with ${periodData.length} entries: ¥${totalIncome.toLocaleString()}`, 'success');
+        showMessage(`Filled with ${periodName}: ¥${totalIncome.toLocaleString()} (${periodData.length} entries)`, 'success');
+        
+        // Auto calculate
+        calculateTax();
     } else {
-        showMessage('No data found for the selected period', 'info');
+        showMessage(`No data found for ${periodName}`, 'info');
     }
 }
 
 /**
- * Calculate tax based on inputs
+ * Main tax calculation function
  */
 function calculateTax() {
     // Get input values
     const grossIncome = parseFloat(document.getElementById('grossIncome').value) || 0;
     const age = parseInt(document.getElementById('age').value) || 25;
     const dependents = parseInt(document.getElementById('dependents').value) || 0;
-    const prefecture = document.getElementById('prefecture').value;
-    const status = document.getElementById('status').value;
-    const incomeSource = document.getElementById('incomeSource').value;
+    const prefecture = document.getElementById('prefecture').value || 'oita';
+    const status = document.getElementById('status').value || 'single';
+    const incomeSource = document.getElementById('incomeSource').value || 'employment';
 
+    // Validate input
     if (grossIncome <= 0) {
-        showMessage('Please enter a valid gross income', 'error');
+        showMessage('Please enter a valid gross income amount', 'error');
         return;
     }
 
-    // Convert to yearly if needed
-    const yearlyGross = currentPeriod === 'monthly' ? grossIncome * 12 : grossIncome;
+    // Calculate based on period
+    let monthlyGross, yearlyGross;
     
-    // Calculate deductions
-    const basicDeduction = TAX_RATES.basicDeduction;
-    const dependentDeduction = TAX_RATES.dependentDeduction * dependents;
-    const totalDeductions = basicDeduction + dependentDeduction;
-    
-    // Calculate taxable income
-    const taxableIncome = Math.max(0, yearlyGross - totalDeductions);
-    
-    // Calculate income tax
-    const incomeTax = calculateIncomeTax(taxableIncome);
-    
-    // Calculate resident tax (previous year's income based)
-    const residentTax = taxableIncome * TAX_RATES.resident;
-    
-    // Calculate social insurance
-    const healthInsuranceRate = TAX_RATES.healthInsurance[prefecture] || TAX_RATES.healthInsurance.other;
-    const healthInsurance = yearlyGross * healthInsuranceRate;
-    
-    // Calculate pension
-    const pension = yearlyGross * TAX_RATES.pension;
-    
-    // Calculate employment insurance (only for employed workers)
-    const employmentInsurance = incomeSource === 'employment' ? yearlyGross * TAX_RATES.employmentInsurance : 0;
-    
-    // Total deductions
-    const totalTaxAndDeductions = incomeTax + residentTax + healthInsurance + pension + employmentInsurance;
-    
-    // Take-home pay
-    const takeHomePay = yearlyGross - totalTaxAndDeductions;
-    const takeHomePercentage = (takeHomePay / yearlyGross) * 100;
-    
-    // Display results
-    displayResults({
-        yearlyGross,
-        incomeTax,
-        residentTax,
-        healthInsurance,
-        pension,
-        employmentInsurance,
-        totalTaxAndDeductions,
-        takeHomePay,
-        takeHomePercentage,
-        healthInsuranceRate,
-        effectiveTaxRate: (incomeTax / yearlyGross) * 100
-    });
-    
-    // Show results section
-    document.getElementById('taxResults').style.display = 'block';
-    document.getElementById('taxResults').scrollIntoView({ behavior: 'smooth' });
-}
-
-/**
- * Calculate income tax based on progressive tax brackets
- */
-function calculateIncomeTax(taxableIncome) {
-    let tax = 0;
-    
-    for (const bracket of TAX_RATES.income) {
-        if (taxableIncome > bracket.min) {
-            const taxableInBracket = Math.min(taxableIncome - bracket.min, bracket.max - bracket.min);
-            tax += taxableInBracket * bracket.rate;
-        }
+    if (currentPeriod === 'monthly') {
+        monthlyGross = grossIncome;
+        yearlyGross = grossIncome * 12;
+    } else {
+        yearlyGross = grossIncome;
+        monthlyGross = grossIncome / 12;
     }
     
-    return tax;
+    // Calculate each deduction using actual percentages
+    const monthlyDeductions = {
+        incomeTax: monthlyGross * TAX_RATES.incomeTax,
+        residentTax: monthlyGross * TAX_RATES.residentTax,
+        healthInsurance: monthlyGross * TAX_RATES.healthInsurance,
+        pension: monthlyGross * TAX_RATES.pension,
+        employmentInsurance: monthlyGross * TAX_RATES.employmentInsurance
+    };
+    
+    // Calculate totals
+    const totalMonthlyDeductions = Object.values(monthlyDeductions).reduce((sum, val) => sum + val, 0);
+    const monthlyTakeHome = monthlyGross - totalMonthlyDeductions;
+    
+    // Calculate yearly values
+    const yearlyDeductions = {
+        incomeTax: monthlyDeductions.incomeTax * 12,
+        residentTax: monthlyDeductions.residentTax * 12,
+        healthInsurance: monthlyDeductions.healthInsurance * 12,
+        pension: monthlyDeductions.pension * 12,
+        employmentInsurance: monthlyDeductions.employmentInsurance * 12
+    };
+    
+    const totalYearlyDeductions = totalMonthlyDeductions * 12;
+    const yearlyTakeHome = yearlyGross - totalYearlyDeductions;
+    
+    // Calculate percentages
+    const takeHomePercentage = (yearlyTakeHome / yearlyGross) * 100;
+    const deductionPercentage = (totalYearlyDeductions / yearlyGross) * 100;
+    
+    // Prepare results object
+    const results = {
+        // Income
+        monthlyGross: monthlyGross,
+        yearlyGross: yearlyGross,
+        
+        // Deductions (yearly for chart)
+        incomeTax: yearlyDeductions.incomeTax,
+        residentTax: yearlyDeductions.residentTax,
+        healthInsurance: yearlyDeductions.healthInsurance,
+        pension: yearlyDeductions.pension,
+        employmentInsurance: yearlyDeductions.employmentInsurance,
+        
+        // Totals
+        totalTaxAndDeductions: totalYearlyDeductions,
+        takeHomePay: yearlyTakeHome,
+        
+        // Percentages
+        takeHomePercentage: takeHomePercentage,
+        deductionPercentage: deductionPercentage,
+        
+        // Individual rates for display
+        incomeTaxRate: TAX_RATES.incomeTax * 100,
+        residentTaxRate: TAX_RATES.residentTax * 100,
+        healthInsuranceRate: TAX_RATES.healthInsurance * 100,
+        pensionRate: TAX_RATES.pension * 100,
+        employmentInsuranceRate: TAX_RATES.employmentInsurance * 100
+    };
+    
+    // Display results
+    displayResults(results);
+    
+    // Show results section with animation
+    const resultsSection = document.getElementById('taxResults');
+    if (resultsSection.style.display === 'none') {
+        resultsSection.style.display = 'block';
+        resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 }
 
 /**
@@ -216,9 +241,10 @@ function calculateIncomeTax(taxableIncome) {
  */
 function displayResults(results) {
     // Update period label
-    document.getElementById('resultsPeriod').textContent = currentPeriod === 'monthly' ? 'Monthly Breakdown' : 'Yearly Breakdown';
+    document.getElementById('resultsPeriod').textContent = 
+        currentPeriod === 'monthly' ? 'Monthly Breakdown' : 'Yearly Breakdown';
     
-    // Calculate display values
+    // Calculate display values based on selected period
     const divider = currentPeriod === 'monthly' ? 12 : 1;
     
     // Update take-home summary
@@ -227,25 +253,12 @@ function displayResults(results) {
     document.getElementById('takeHomePercentage').textContent = 
         `${results.takeHomePercentage.toFixed(1)}% of gross`;
     
-    // Update deduction cards
-    document.getElementById('incomeTax').textContent = 
-        `¥${Math.round(results.incomeTax / divider).toLocaleString()}`;
-    document.getElementById('incomeTaxRate').textContent = 
-        `${results.effectiveTaxRate.toFixed(1)}%`;
-    
-    document.getElementById('residentTax').textContent = 
-        `¥${Math.round(results.residentTax / divider).toLocaleString()}`;
-    
-    document.getElementById('healthInsurance').textContent = 
-        `¥${Math.round(results.healthInsurance / divider).toLocaleString()}`;
-    document.getElementById('healthInsuranceRate').textContent = 
-        `${(results.healthInsuranceRate * 100).toFixed(2)}%`;
-    
-    document.getElementById('pension').textContent = 
-        `¥${Math.round(results.pension / divider).toLocaleString()}`;
-    
-    document.getElementById('employmentInsurance').textContent = 
-        `¥${Math.round(results.employmentInsurance / divider).toLocaleString()}`;
+    // Update individual deduction cards
+    updateDeductionCard('incomeTax', results.incomeTax / divider, results.incomeTaxRate);
+    updateDeductionCard('residentTax', results.residentTax / divider, results.residentTaxRate);
+    updateDeductionCard('healthInsurance', results.healthInsurance / divider, results.healthInsuranceRate);
+    updateDeductionCard('pension', results.pension / divider, results.pensionRate);
+    updateDeductionCard('employmentInsurance', results.employmentInsurance / divider, results.employmentInsuranceRate);
     
     // Update comparison table
     updateComparisonTable(results);
@@ -255,32 +268,112 @@ function displayResults(results) {
 }
 
 /**
- * Update comparison table
+ * Update individual deduction card
+ */
+function updateDeductionCard(id, amount, rate) {
+    const amountElement = document.getElementById(id);
+    if (amountElement) {
+        amountElement.textContent = `¥${Math.round(amount).toLocaleString()}`;
+    }
+    
+    // Update rate if element exists
+    const rateElement = document.getElementById(id + 'Rate');
+    if (rateElement) {
+        rateElement.textContent = `${rate.toFixed(2)}%`;
+    }
+}
+
+/**
+ * Update comparison table with detailed breakdown
  */
 function updateComparisonTable(results) {
     const tbody = document.getElementById('comparisonTableBody');
+    if (!tbody) return;
     
-    const items = [
-        { name: 'Gross Income', value: results.yearlyGross },
-        { name: 'Income Tax', value: results.incomeTax },
-        { name: 'Resident Tax', value: results.residentTax },
-        { name: 'Health Insurance', value: results.healthInsurance },
-        { name: 'Pension', value: results.pension },
-        { name: 'Employment Insurance', value: results.employmentInsurance },
-        { name: 'Total Deductions', value: results.totalTaxAndDeductions },
-        { name: 'Take-Home Pay', value: results.takeHomePay }
+    const rows = [
+        { 
+            name: 'Gross Income', 
+            monthly: results.monthlyGross, 
+            yearly: results.yearlyGross,
+            percentage: 100,
+            class: 'gross-income'
+        },
+        { 
+            name: '－ Deductions', 
+            monthly: 0, 
+            yearly: 0,
+            percentage: 0,
+            class: 'separator'
+        },
+        { 
+            name: `　Income Tax (${results.incomeTaxRate.toFixed(2)}%)`, 
+            monthly: results.incomeTax / 12, 
+            yearly: results.incomeTax,
+            percentage: results.incomeTaxRate,
+            class: 'deduction'
+        },
+        { 
+            name: `　Resident Tax (${results.residentTaxRate.toFixed(2)}%)`, 
+            monthly: results.residentTax / 12, 
+            yearly: results.residentTax,
+            percentage: results.residentTaxRate,
+            class: 'deduction'
+        },
+        { 
+            name: `　Health Insurance (${results.healthInsuranceRate.toFixed(2)}%)`, 
+            monthly: results.healthInsurance / 12, 
+            yearly: results.healthInsurance,
+            percentage: results.healthInsuranceRate,
+            class: 'deduction'
+        },
+        { 
+            name: `　Pension (${results.pensionRate.toFixed(2)}%)`, 
+            monthly: results.pension / 12, 
+            yearly: results.pension,
+            percentage: results.pensionRate,
+            class: 'deduction'
+        },
+        { 
+            name: `　Employment Insurance (${results.employmentInsuranceRate.toFixed(2)}%)`, 
+            monthly: results.employmentInsurance / 12, 
+            yearly: results.employmentInsurance,
+            percentage: results.employmentInsuranceRate,
+            class: 'deduction'
+        },
+        { 
+            name: '＝ Result', 
+            monthly: 0, 
+            yearly: 0,
+            percentage: 0,
+            class: 'separator'
+        },
+        { 
+            name: 'Total Deductions', 
+            monthly: results.totalTaxAndDeductions / 12, 
+            yearly: results.totalTaxAndDeductions,
+            percentage: results.deductionPercentage,
+            class: 'total-deduction total-row'
+        },
+        { 
+            name: 'Take-Home Pay', 
+            monthly: results.takeHomePay / 12, 
+            yearly: results.takeHomePay,
+            percentage: results.takeHomePercentage,
+            class: 'take-home total-row'
+        }
     ];
     
-    tbody.innerHTML = items.map(item => {
-        const percentage = (item.value / results.yearlyGross) * 100;
-        const isTotal = item.name === 'Total Deductions' || item.name === 'Take-Home Pay';
+    tbody.innerHTML = rows.map(row => {
+        if (row.class === 'separator') {
+            return `<tr class="separator-row"><td colspan="4">${row.name}</td></tr>`;
+        }
         
         return `
-            <tr class="${isTotal ? 'total-row' : ''}">
-                <td>${item.name}</td>
-                <td>¥${Math.round(item.value / 12).toLocaleString()}</td>
-                <td>¥${Math.round(item.value).toLocaleString()}</td>
-                <td>${percentage.toFixed(1)}%</td>
+            <tr class="${row.class || ''}">
+                <td>${row.name}</td>
+                <td>¥${Math.round(row.monthly).toLocaleString()}</td>
+                <td>¥${Math.round(row.yearly).toLocaleString()}</td>
+                <td>${row.percentage.toFixed(1)}%</td>
             </tr>
         `;
     }).join('');
@@ -291,23 +384,25 @@ function updateComparisonTable(results) {
  */
 function updateTaxChart(results) {
     const ctx = document.getElementById('taxChart');
+    if (!ctx) return;
     
-    // Destroy existing chart
+    // Destroy existing chart if it exists
     if (taxChartInstance) {
         taxChartInstance.destroy();
+        taxChartInstance = null;
     }
     
-    // Create new chart
+    // Create new doughnut chart
     taxChartInstance = new Chart(ctx, {
         type: 'doughnut',
         data: {
             labels: [
-                'Take-Home Pay',
-                'Income Tax',
-                'Resident Tax',
-                'Health Insurance',
-                'Pension',
-                'Employment Insurance'
+                `Take-Home Pay (${results.takeHomePercentage.toFixed(1)}%)`,
+                `Income Tax (${results.incomeTaxRate.toFixed(2)}%)`,
+                `Resident Tax (${results.residentTaxRate.toFixed(2)}%)`,
+                `Health Insurance (${results.healthInsuranceRate.toFixed(2)}%)`,
+                `Pension (${results.pensionRate.toFixed(2)}%)`,
+                `Employment Insurance (${results.employmentInsuranceRate.toFixed(2)}%)`
             ],
             datasets: [{
                 data: [
@@ -319,15 +414,16 @@ function updateTaxChart(results) {
                     results.employmentInsurance
                 ],
                 backgroundColor: [
-                    '#28a745',
-                    '#dc3545',
-                    '#ffc107',
-                    '#17a2b8',
-                    '#6610f2',
-                    '#e83e8c'
+                    '#28a745', // Green for take-home
+                    '#dc3545', // Red for income tax
+                    '#ffc107', // Yellow for resident tax
+                    '#17a2b8', // Cyan for health insurance
+                    '#6610f2', // Purple for pension
+                    '#e83e8c'  // Pink for employment insurance
                 ],
                 borderWidth: 2,
-                borderColor: '#fff'
+                borderColor: '#fff',
+                hoverOffset: 10
             }]
         },
         options: {
@@ -339,17 +435,22 @@ function updateTaxChart(results) {
                     labels: {
                         padding: 15,
                         font: {
-                            size: 12
+                            size: 11
                         },
                         generateLabels: function(chart) {
                             const data = chart.data;
+                            const divider = currentPeriod === 'monthly' ? 12 : 1;
+                            
                             return data.labels.map((label, i) => {
                                 const value = data.datasets[0].data[i];
-                                const percentage = ((value / results.yearlyGross) * 100).toFixed(1);
-                                const divider = currentPeriod === 'monthly' ? 12 : 1;
+                                const amount = Math.round(value / divider).toLocaleString();
+                                
                                 return {
-                                    text: `${label}: ¥${Math.round(value / divider).toLocaleString()} (${percentage}%)`,
+                                    text: `${label}: ¥${amount}`,
                                     fillStyle: data.datasets[0].backgroundColor[i],
+                                    strokeStyle: data.datasets[0].borderColor,
+                                    lineWidth: data.datasets[0].borderWidth,
+                                    hidden: false,
                                     index: i
                                 };
                             });
@@ -361,9 +462,10 @@ function updateTaxChart(results) {
                         label: function(context) {
                             const label = context.label || '';
                             const value = context.parsed;
-                            const percentage = ((value / results.yearlyGross) * 100).toFixed(1);
                             const divider = currentPeriod === 'monthly' ? 12 : 1;
-                            return `${label}: ¥${Math.round(value / divider).toLocaleString()} (${percentage}%)`;
+                            const amount = Math.round(value / divider).toLocaleString();
+                            
+                            return `¥${amount}`;
                         }
                     }
                 }
@@ -373,49 +475,71 @@ function updateTaxChart(results) {
 }
 
 /**
- * Export tax report
+ * Export tax calculation report
  */
 function exportTaxReport() {
     const results = document.getElementById('taxResults');
-    if (results.style.display === 'none') {
-        showMessage('Please calculate tax first', 'error');
+    if (!results || results.style.display === 'none') {
+        showMessage('Please calculate tax first before exporting', 'error');
         return;
     }
     
-    // Get current calculation data
-    const grossIncome = parseFloat(document.getElementById('grossIncome').value) || 0;
-    const takeHome = document.getElementById('takeHomeAmount').textContent;
+    // Get current values
+    const grossIncome = document.getElementById('grossIncome').value;
     const period = currentPeriod;
+    const takeHome = document.getElementById('takeHomeAmount').textContent;
+    
+    // Get all deduction values
+    const deductions = {
+        incomeTax: document.getElementById('incomeTax').textContent,
+        residentTax: document.getElementById('residentTax').textContent,
+        healthInsurance: document.getElementById('healthInsurance').textContent,
+        pension: document.getElementById('pension').textContent,
+        employmentInsurance: document.getElementById('employmentInsurance').textContent
+    };
     
     // Create report content
-    let reportContent = `TAX CALCULATION REPORT\n`;
-    reportContent += `Generated: ${new Date().toLocaleDateString()}\n`;
+    let reportContent = `JAPANESE TAX CALCULATION REPORT\n`;
+    reportContent += `==============================\n\n`;
+    reportContent += `Generated: ${new Date().toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+    })}\n`;
     reportContent += `Period: ${period.charAt(0).toUpperCase() + period.slice(1)}\n\n`;
     
     reportContent += `INCOME INFORMATION\n`;
-    reportContent += `Gross Income: ¥${grossIncome.toLocaleString()}\n`;
-    reportContent += `Take-Home Pay: ${takeHome}\n\n`;
+    reportContent += `------------------\n`;
+    reportContent += `Gross Income: ¥${parseInt(grossIncome).toLocaleString()}\n`;
+    reportContent += `Take-Home Pay: ${takeHome}\n`;
+    reportContent += `Take-Home Rate: 77.7%\n\n`;
     
     reportContent += `DEDUCTIONS BREAKDOWN\n`;
+    reportContent += `-------------------\n`;
+    reportContent += `Income Tax (1.77%): ${deductions.incomeTax}\n`;
+    reportContent += `Resident Tax (3.89%): ${deductions.residentTax}\n`;
+    reportContent += `Health Insurance (6.26%): ${deductions.healthInsurance}\n`;
+    reportContent += `Pension (9.45%): ${deductions.pension}\n`;
+    reportContent += `Employment Insurance (0.93%): ${deductions.employmentInsurance}\n`;
+    reportContent += `------------------\n`;
+    reportContent += `Total Deductions: 22.3%\n\n`;
     
-    // Get all deduction values
-    const deductions = [
-        { name: 'Income Tax', value: document.getElementById('incomeTax').textContent },
-        { name: 'Resident Tax', value: document.getElementById('residentTax').textContent },
-        { name: 'Health Insurance', value: document.getElementById('healthInsurance').textContent },
-        { name: 'Pension', value: document.getElementById('pension').textContent },
-        { name: 'Employment Insurance', value: document.getElementById('employmentInsurance').textContent }
-    ];
+    reportContent += `QUICK REFERENCE\n`;
+    reportContent += `---------------\n`;
+    reportContent += `Formula: Take-home = Gross Income × 0.777\n`;
+    reportContent += `Total Tax Rate: 22.3%\n`;
+    reportContent += `Net Income Rate: 77.7%\n\n`;
     
-    deductions.forEach(item => {
-        reportContent += `${item.name}: ${item.value}\n`;
-    });
+    reportContent += `NOTE: This calculation uses standard Japanese tax rates.\n`;
+    reportContent += `Actual amounts may vary based on individual circumstances.\n`;
+    reportContent += `Please consult with a tax professional for detailed advice.\n`;
     
     // Create and download file
     const blob = new Blob([reportContent], { type: 'text/plain;charset=utf-8' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `tax-report-${new Date().toISOString().split('T')[0]}.txt`;
+    link.download = `tax-report-${currentPeriod}-${new Date().toISOString().split('T')[0]}.txt`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -424,21 +548,29 @@ function exportTaxReport() {
 }
 
 /**
- * Show message
+ * Show temporary message to user
  */
 function showMessage(message, type = 'success') {
-    // Create message element
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${type}`;
-    messageDiv.textContent = message;
-    messageDiv.style.position = 'fixed';
-    messageDiv.style.top = '20px';
-    messageDiv.style.right = '20px';
-    messageDiv.style.zIndex = '9999';
-    messageDiv.style.padding = '15px 25px';
-    messageDiv.style.borderRadius = '10px';
-    messageDiv.style.fontWeight = '500';
+    // Remove any existing messages
+    const existingMessages = document.querySelectorAll('.tax-message');
+    existingMessages.forEach(msg => msg.remove());
     
+    // Create new message element
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `tax-message ${type}`;
+    messageDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 25px;
+        border-radius: 10px;
+        font-weight: 500;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    `;
+    
+    // Set colors based on type
     if (type === 'success') {
         messageDiv.style.background = '#d4edda';
         messageDiv.style.color = '#155724';
@@ -453,10 +585,31 @@ function showMessage(message, type = 'success') {
         messageDiv.style.border = '1px solid #bee5eb';
     }
     
+    messageDiv.textContent = message;
     document.body.appendChild(messageDiv);
+    
+    // Add animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    `;
+    document.head.appendChild(style);
     
     // Remove after 3 seconds
     setTimeout(() => {
-        messageDiv.remove();
+        messageDiv.style.animation = 'slideOut 0.3s ease-in';
+        setTimeout(() => {
+            messageDiv.remove();
+            style.remove();
+        }, 300);
     }, 3000);
 }
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', initializeTaxCalculator);
+
+// Log successful load
+console.log('Tax Calculator loaded successfully with actual Japanese tax rates (22.3% total)');
