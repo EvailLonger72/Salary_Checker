@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <title>Calendar View - Shift Pay Calculator</title>
 
     <!-- Styles -->
@@ -1151,59 +1152,6 @@
           </div>
         </div>
 
-        <!-- Enhanced Shift Planning -->
-        <div class="shift-planning">
-          <h3>Plan Your Shifts</h3>
-
-          <!-- Shift Suggestions -->
-          <div class="shift-suggestions">
-            <div class="suggestions-header">
-              <h4>💡 Quick Suggestions</h4>
-              <span style="font-size: 0.9rem; color: #666"
-                >Based on your previous shifts</span
-              >
-            </div>
-            <div class="suggestions-grid" id="shiftSuggestions">
-              <!-- Suggestions will be generated here -->
-            </div>
-          </div>
-
-          <!-- Quick Add Form -->
-          <div class="quick-add-form">
-            <div class="form-grid">
-              <div class="form-group">
-                <label for="planDate">📅 Date</label>
-                <input type="date" id="planDate" class="plan-input" />
-              </div>
-              <div class="form-group">
-                <label for="planShiftType">🏭 Shift Type</label>
-                <select
-                  id="planShiftType"
-                  class="plan-input"
-                  onchange="updateShiftTimes()"
-                >
-                  <option value="">Select Shift</option>
-                  <option value="C341">C341 - Day Shift</option>
-                  <option value="C342">C342 - Night Shift</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label for="planStartTime">⏰ Start Time</label>
-                <input type="time" id="planStartTime" class="plan-input" />
-              </div>
-              <div class="form-group">
-                <label for="planEndTime">⏰ End Time</label>
-                <input type="time" id="planEndTime" class="plan-input" />
-              </div>
-            </div>
-            <button class="add-plan-btn" onclick="quickAddShift()">
-              ✨ Add Shift to Calendar
-            </button>
-          </div>
-        </div>
-      </main>
-    </div>
-
     <!-- Shift Details Modal -->
     <div id="shiftModal" class="modal" style="display: none">
       <div class="modal-content">
@@ -2017,4 +1965,7 @@
       });
     </script>
   </body>
+  <script src="break_schedule.js"></script>
+  <script src="script.js"></script>
+  <script src="calendar.js"></script>
 </html>
