@@ -1,210 +1,187 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calendar View - Shift Pay Calculator</title>
-
+    
     <!-- Styles -->
-    <link rel="stylesheet" href="style.css" />
-    <link rel="stylesheet" href="calendar.css" />
-
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="calendar.css">
+    
     <!-- Favicon -->
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="192x192"
-      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗓️</text></svg>"
-    />
-  </head>
-  <body>
+    <link rel="icon" type="image/png" sizes="192x192" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗓️</text></svg>">
+</head>
+<body>
     <div class="app-container">
-      <!-- Sidebar Navigation -->
-      <nav class="sidebar">
-        <div class="sidebar-header">
-          <h2>🏭 ShiftPay</h2>
-          <p>Calendar View</p>
-        </div>
-        <ul class="nav-menu">
-          <li class="nav-item" onclick="window.location.href='index.html'">
-            <span class="nav-icon">📊</span>
-            Dashboard
-          </li>
-          <li
-            class="nav-item"
-            onclick="window.location.href='index.html#calculator'"
-          >
-            <span class="nav-icon">💰</span>
-            Calculator
-          </li>
-          <li
-            class="nav-item"
-            onclick="window.location.href='index.html#weekly'"
-          >
-            <span class="nav-icon">📅</span>
-            Weekly Report
-          </li>
-          <li class="nav-item active">
-            <span class="nav-icon">🗓️</span>
-            Calendar View
-          </li>
-          <li
-            class="nav-item"
-            onclick="window.location.href='monthly-analysis.html'"
-          >
-            <span class="nav-icon">📈</span>
-            Monthly Analysis
-          </li>
-          <li
-            class="nav-item"
-            onclick="window.location.href='index.html#shifts'"
-          >
-            <span class="nav-icon">⏰</span>
-            Shift Schedule
-          </li>
-          <li
-            class="nav-item"
-            onclick="window.location.href='index.html#settings'"
-          >
-            <span class="nav-icon">⚙️</span>
-            Settings
-          </li>
-        </ul>
-      </nav>
-
-      <!-- Main Content -->
-      <main class="main-content">
-        <div class="page-header">
-          <div>
-            <h1>Calendar View</h1>
-            <p>Track your shifts and earnings by date</p>
-          </div>
-          <div class="calendar-controls">
-            <button class="month-nav-btn" onclick="previousMonth()">
-              <span>←</span>
-            </button>
-            <h2 id="currentMonthYear">November 2024</h2>
-            <button class="month-nav-btn" onclick="nextMonth()">
-              <span>→</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Calendar Container -->
-        <div class="calendar-wrapper">
-          <div class="calendar-container">
-            <div class="calendar-header">
-              <div class="day-header">Sun</div>
-              <div class="day-header">Mon</div>
-              <div class="day-header">Tue</div>
-              <div class="day-header">Wed</div>
-              <div class="day-header">Thu</div>
-              <div class="day-header">Fri</div>
-              <div class="day-header">Sat</div>
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>🏭 ShiftPay</h2>
+                <p>Calendar View</p>
             </div>
-            <div id="calendarGrid" class="calendar-grid">
-              <!-- Calendar days will be generated here -->
-            </div>
-          </div>
+            <ul class="nav-menu">
+                <li class="nav-item" onclick="window.location.href='index.html'">
+                    <span class="nav-icon">📊</span>
+                    Dashboard
+                </li>
+                <li class="nav-item" onclick="window.location.href='index.html#calculator'">
+                    <span class="nav-icon">💰</span>
+                    Calculator
+                </li>
+                <li class="nav-item" onclick="window.location.href='index.html#weekly'">
+                    <span class="nav-icon">📅</span>
+                    Weekly Report
+                </li>
+                <li class="nav-item active">
+                    <span class="nav-icon">🗓️</span>
+                    Calendar View
+                </li>
+                <!-- Monthly Analysis link removed -->
+                <li class="nav-item" onclick="window.location.href='index.html#shifts'">
+                    <span class="nav-icon">⏰</span>
+                    Shift Schedule
+                </li>
+                <li class="nav-item" onclick="window.location.href='index.html#settings'">
+                    <span class="nav-icon">⚙️</span>
+                    Settings
+                </li>
+            </ul>
+        </nav>
 
-          <!-- Monthly Summary -->
-          <div class="monthly-summary">
-            <h3>📊 Monthly Summary</h3>
-            <div class="summary-content">
-              <div class="summary-item">
-                <span class="summary-label">Total Days Worked:</span>
-                <span class="summary-value" id="totalDaysWorked">0</span>
-              </div>
-              <div class="summary-item">
-                <span class="summary-label">Day Shifts:</span>
-                <span class="summary-value" id="dayShifts">0</span>
-              </div>
-              <div class="summary-item">
-                <span class="summary-label">Night Shifts:</span>
-                <span class="summary-value" id="nightShifts">0</span>
-              </div>
-              <div class="summary-item">
-                <span class="summary-label">Total Hours:</span>
-                <span class="summary-value" id="totalHours">0h</span>
-              </div>
-              <div class="summary-item">
-                <span class="summary-label">Total Earnings:</span>
-                <span class="summary-value" id="totalEarnings">¥0</span>
-              </div>
-              <div class="summary-item">
-                <span class="summary-label">Take-home (77.7%):</span>
-                <span class="summary-value" id="takeHome">¥0</span>
-              </div>
+        <!-- Main Content (အောက်က code အကုန် အရင်အတိုင်းပဲ) -->
+        <main class="main-content">
+            <div class="page-header">
+                <div>
+                    <h1>Calendar View</h1>
+                    <p>Track your shifts and earnings by date</p>
+                </div>
+                <div class="calendar-controls">
+                    <button class="month-nav-btn" onclick="previousMonth()">
+                        <span>←</span>
+                    </button>
+                    <h2 id="currentMonthYear">November 2024</h2>
+                    <button class="month-nav-btn" onclick="nextMonth()">
+                        <span>→</span>
+                    </button>
+                </div>
             </div>
 
-            <!-- Legend -->
-            <div class="calendar-legend">
-              <h4>Legend</h4>
-              <div class="legend-item">
-                <span class="legend-dot day-shift"></span>
-                <span>Day Shift (C341)</span>
-              </div>
-              <div class="legend-item">
-                <span class="legend-dot night-shift"></span>
-                <span>Night Shift (C342)</span>
-              </div>
-              <div class="legend-item">
-                <span class="legend-icon">💰</span>
-                <span>Pay Day (25th)</span>
-              </div>
-            </div>
-          </div>
-        </div>
+            <!-- Calendar Container -->
+            <div class="calendar-wrapper">
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <div class="day-header">Sun</div>
+                        <div class="day-header">Mon</div>
+                        <div class="day-header">Tue</div>
+                        <div class="day-header">Wed</div>
+                        <div class="day-header">Thu</div>
+                        <div class="day-header">Fri</div>
+                        <div class="day-header">Sat</div>
+                    </div>
+                    <div id="calendarGrid" class="calendar-grid">
+                        <!-- Calendar days will be generated here -->
+                    </div>
+                </div>
 
-        <!-- Quick Stats -->
-        <div class="quick-stats">
-          <div class="stat-card">
-            <div class="stat-icon">📈</div>
-            <div class="stat-content">
-              <h3 id="avgDailyEarnings">¥0</h3>
-              <p>Avg Daily Earnings</p>
+                <!-- Monthly Summary -->
+                <div class="monthly-summary">
+                    <h3>📊 Monthly Summary</h3>
+                    <div class="summary-content">
+                        <div class="summary-item">
+                            <span class="summary-label">Total Days Worked:</span>
+                            <span class="summary-value" id="totalDaysWorked">0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Day Shifts:</span>
+                            <span class="summary-value" id="dayShifts">0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Night Shifts:</span>
+                            <span class="summary-value" id="nightShifts">0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Total Hours:</span>
+                            <span class="summary-value" id="totalHours">0h</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Total Earnings:</span>
+                            <span class="summary-value" id="totalEarnings">¥0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Take-home (77.7%):</span>
+                            <span class="summary-value" id="takeHome">¥0</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Legend -->
+                    <div class="calendar-legend">
+                        <h4>Legend</h4>
+                        <div class="legend-item">
+                            <span class="legend-dot day-shift"></span>
+                            <span>Day Shift (C341)</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot night-shift"></span>
+                            <span>Night Shift (C342)</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-icon">💰</span>
+                            <span>Pay Day (25th)</span>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon">⏱️</div>
-            <div class="stat-content">
-              <h3 id="avgDailyHours">0h</h3>
-              <p>Avg Daily Hours</p>
+
+            <!-- Quick Stats -->
+            <div class="quick-stats">
+                <div class="stat-card">
+                    <div class="stat-icon">📈</div>
+                    <div class="stat-content">
+                        <h3 id="avgDailyEarnings">¥0</h3>
+                        <p>Avg Daily Earnings</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⏱️</div>
+                    <div class="stat-content">
+                        <h3 id="avgDailyHours">0h</h3>
+                        <p>Avg Daily Hours</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🎯</div>
+                    <div class="stat-content">
+                        <h3 id="monthlyProgress">0%</h3>
+                        <p>Monthly Goal</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">💪</div>
+                    <div class="stat-content">
+                        <h3 id="streakDays">0</h3>
+                        <p>Work Streak</p>
+                    </div>
+                </div>
             </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon">🎯</div>
-            <div class="stat-content">
-              <h3 id="monthlyProgress">0%</h3>
-              <p>Monthly Goal</p>
-            </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon">💪</div>
-            <div class="stat-content">
-              <h3 id="streakDays">0</h3>
-              <p>Work Streak</p>
-            </div>
-          </div>
-        </div>
-      </main>
+        </main>
     </div>
 
     <!-- Day Details Modal -->
     <div id="dayModal" class="modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3 id="modalDate">Date</h3>
-          <button class="modal-close" onclick="closeDayModal()">×</button>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalDate">Date</h3>
+                <button class="modal-close" onclick="closeDayModal()">×</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Day details will be populated here -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn-edit" onclick="editShift()">Edit Shift</button>
+                <button class="btn-add" onclick="addShift()">Add Shift</button>
+            </div>
         </div>
-        <div class="modal-body" id="modalBody">
-          <!-- Day details will be populated here -->
-        </div>
-        <div class="modal-footer">
-          <button class="btn-edit" onclick="editShift()">Edit Shift</button>
-          <button class="btn-add" onclick="addShift()">Add Shift</button>
-        </div>
-      </div>
     </div>
 
     <!-- Mobile menu toggle -->
@@ -213,30 +190,460 @@
 
     <!-- Scripts -->
     <script src="calendar.js"></script>
-
+    
     <script>
-      // Mobile menu functions
-      function toggleMobileMenu() {
-        const sidebar = document.querySelector(".sidebar");
-        const overlay = document.querySelector(".mobile-overlay");
-        const toggle = document.querySelector(".mobile-menu-toggle");
+        // Mobile menu functions
+        function toggleMobileMenu() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.mobile-overlay');
+            const toggle = document.querySelector('.mobile-menu-toggle');
+            
+            sidebar.classList.toggle('mobile-open');
+            overlay.classList.toggle('active');
+            toggle.innerHTML = sidebar.classList.contains('mobile-open') ? '✕' : '☰';
+        }
 
-        sidebar.classList.toggle("mobile-open");
-        overlay.classList.toggle("active");
-        toggle.innerHTML = sidebar.classList.contains("mobile-open")
-          ? "✕"
-          : "☰";
-      }
-
-      function closeMobileMenu() {
-        const sidebar = document.querySelector(".sidebar");
-        const overlay = document.querySelector(".mobile-overlay");
-        const toggle = document.querySelector(".mobile-menu-toggle");
-
-        sidebar.classList.remove("mobile-open");
-        overlay.classList.remove("active");
-        toggle.innerHTML = "☰";
-      }
+        function closeMobileMenu() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.mobile-overlay');
+            const toggle = document.querySelector('.mobile-menu-toggle');
+            
+            sidebar.classList.remove('mobile-open');
+            overlay.classList.remove('active');
+            toggle.innerHTML = '☰';
+        }
     </script>
-  </body>
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar View - Shift Pay Calculator</title>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="calendar.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="192x192" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗓️</text></svg>">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>🏭 ShiftPay</h2>
+                <p>Calendar View</p>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item" onclick="window.location.href='index.html'">
+                    <span class="nav-icon">📊</span>
+                    Dashboard
+                </li>
+                <li class="nav-item" onclick="window.location.href='index.html#calculator'">
+                    <span class="nav-icon">💰</span>
+                    Calculator
+                </li>
+                <li class="nav-item" onclick="window.location.href='index.html#weekly'">
+                    <span class="nav-icon">📅</span>
+                    Weekly Report
+                </li>
+                <li class="nav-item active">
+                    <span class="nav-icon">🗓️</span>
+                    Calendar View
+                </li>
+                <!-- Monthly Analysis link removed -->
+                <li class="nav-item" onclick="window.location.href='index.html#shifts'">
+                    <span class="nav-icon">⏰</span>
+                    Shift Schedule
+                </li>
+                <li class="nav-item" onclick="window.location.href='index.html#settings'">
+                    <span class="nav-icon">⚙️</span>
+                    Settings
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content (အောက်က code အကုန် အရင်အတိုင်းပဲ) -->
+        <main class="main-content">
+            <div class="page-header">
+                <div>
+                    <h1>Calendar View</h1>
+                    <p>Track your shifts and earnings by date</p>
+                </div>
+                <div class="calendar-controls">
+                    <button class="month-nav-btn" onclick="previousMonth()">
+                        <span>←</span>
+                    </button>
+                    <h2 id="currentMonthYear">November 2024</h2>
+                    <button class="month-nav-btn" onclick="nextMonth()">
+                        <span>→</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Calendar Container -->
+            <div class="calendar-wrapper">
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <div class="day-header">Sun</div>
+                        <div class="day-header">Mon</div>
+                        <div class="day-header">Tue</div>
+                        <div class="day-header">Wed</div>
+                        <div class="day-header">Thu</div>
+                        <div class="day-header">Fri</div>
+                        <div class="day-header">Sat</div>
+                    </div>
+                    <div id="calendarGrid" class="calendar-grid">
+                        <!-- Calendar days will be generated here -->
+                    </div>
+                </div>
+
+                <!-- Monthly Summary -->
+                <div class="monthly-summary">
+                    <h3>📊 Monthly Summary</h3>
+                    <div class="summary-content">
+                        <div class="summary-item">
+                            <span class="summary-label">Total Days Worked:</span>
+                            <span class="summary-value" id="totalDaysWorked">0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Day Shifts:</span>
+                            <span class="summary-value" id="dayShifts">0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Night Shifts:</span>
+                            <span class="summary-value" id="nightShifts">0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Total Hours:</span>
+                            <span class="summary-value" id="totalHours">0h</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Total Earnings:</span>
+                            <span class="summary-value" id="totalEarnings">¥0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Take-home (77.7%):</span>
+                            <span class="summary-value" id="takeHome">¥0</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Legend -->
+                    <div class="calendar-legend">
+                        <h4>Legend</h4>
+                        <div class="legend-item">
+                            <span class="legend-dot day-shift"></span>
+                            <span>Day Shift (C341)</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot night-shift"></span>
+                            <span>Night Shift (C342)</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-icon">💰</span>
+                            <span>Pay Day (25th)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="quick-stats">
+                <div class="stat-card">
+                    <div class="stat-icon">📈</div>
+                    <div class="stat-content">
+                        <h3 id="avgDailyEarnings">¥0</h3>
+                        <p>Avg Daily Earnings</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⏱️</div>
+                    <div class="stat-content">
+                        <h3 id="avgDailyHours">0h</h3>
+                        <p>Avg Daily Hours</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🎯</div>
+                    <div class="stat-content">
+                        <h3 id="monthlyProgress">0%</h3>
+                        <p>Monthly Goal</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">💪</div>
+                    <div class="stat-content">
+                        <h3 id="streakDays">0</h3>
+                        <p>Work Streak</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Day Details Modal -->
+    <div id="dayModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalDate">Date</h3>
+                <button class="modal-close" onclick="closeDayModal()">×</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Day details will be populated here -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn-edit" onclick="editShift()">Edit Shift</button>
+                <button class="btn-add" onclick="addShift()">Add Shift</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile menu toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">☰</button>
+    <div class="mobile-overlay" onclick="closeMobileMenu()"></div>
+
+    <!-- Scripts -->
+    <script src="calendar.js"></script>
+    
+    <script>
+        // Mobile menu functions
+        function toggleMobileMenu() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.mobile-overlay');
+            const toggle = document.querySelector('.mobile-menu-toggle');
+            
+            sidebar.classList.toggle('mobile-open');
+            overlay.classList.toggle('active');
+            toggle.innerHTML = sidebar.classList.contains('mobile-open') ? '✕' : '☰';
+        }
+
+        function closeMobileMenu() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.mobile-overlay');
+            const toggle = document.querySelector('.mobile-menu-toggle');
+            
+            sidebar.classList.remove('mobile-open');
+            overlay.classList.remove('active');
+            toggle.innerHTML = '☰';
+        }
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar View - Shift Pay Calculator</title>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="calendar.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="192x192" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗓️</text></svg>">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>🏭 ShiftPay</h2>
+                <p>Calendar View</p>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item" onclick="window.location.href='index.html'">
+                    <span class="nav-icon">📊</span>
+                    Dashboard
+                </li>
+                <li class="nav-item" onclick="window.location.href='index.html#calculator'">
+                    <span class="nav-icon">💰</span>
+                    Calculator
+                </li>
+                <li class="nav-item" onclick="window.location.href='index.html#weekly'">
+                    <span class="nav-icon">📅</span>
+                    Weekly Report
+                </li>
+                <li class="nav-item active">
+                    <span class="nav-icon">🗓️</span>
+                    Calendar View
+                </li>
+                <!-- Monthly Analysis link removed -->
+                <li class="nav-item" onclick="window.location.href='index.html#shifts'">
+                    <span class="nav-icon">⏰</span>
+                    Shift Schedule
+                </li>
+                <li class="nav-item" onclick="window.location.href='index.html#settings'">
+                    <span class="nav-icon">⚙️</span>
+                    Settings
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content (အောက်က code အကုန် အရင်အတိုင်းပဲ) -->
+        <main class="main-content">
+            <div class="page-header">
+                <div>
+                    <h1>Calendar View</h1>
+                    <p>Track your shifts and earnings by date</p>
+                </div>
+                <div class="calendar-controls">
+                    <button class="month-nav-btn" onclick="previousMonth()">
+                        <span>←</span>
+                    </button>
+                    <h2 id="currentMonthYear">November 2024</h2>
+                    <button class="month-nav-btn" onclick="nextMonth()">
+                        <span>→</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Calendar Container -->
+            <div class="calendar-wrapper">
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <div class="day-header">Sun</div>
+                        <div class="day-header">Mon</div>
+                        <div class="day-header">Tue</div>
+                        <div class="day-header">Wed</div>
+                        <div class="day-header">Thu</div>
+                        <div class="day-header">Fri</div>
+                        <div class="day-header">Sat</div>
+                    </div>
+                    <div id="calendarGrid" class="calendar-grid">
+                        <!-- Calendar days will be generated here -->
+                    </div>
+                </div>
+
+                <!-- Monthly Summary -->
+                <div class="monthly-summary">
+                    <h3>📊 Monthly Summary</h3>
+                    <div class="summary-content">
+                        <div class="summary-item">
+                            <span class="summary-label">Total Days Worked:</span>
+                            <span class="summary-value" id="totalDaysWorked">0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Day Shifts:</span>
+                            <span class="summary-value" id="dayShifts">0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Night Shifts:</span>
+                            <span class="summary-value" id="nightShifts">0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Total Hours:</span>
+                            <span class="summary-value" id="totalHours">0h</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Total Earnings:</span>
+                            <span class="summary-value" id="totalEarnings">¥0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Take-home (77.7%):</span>
+                            <span class="summary-value" id="takeHome">¥0</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Legend -->
+                    <div class="calendar-legend">
+                        <h4>Legend</h4>
+                        <div class="legend-item">
+                            <span class="legend-dot day-shift"></span>
+                            <span>Day Shift (C341)</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot night-shift"></span>
+                            <span>Night Shift (C342)</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-icon">💰</span>
+                            <span>Pay Day (25th)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="quick-stats">
+                <div class="stat-card">
+                    <div class="stat-icon">📈</div>
+                    <div class="stat-content">
+                        <h3 id="avgDailyEarnings">¥0</h3>
+                        <p>Avg Daily Earnings</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⏱️</div>
+                    <div class="stat-content">
+                        <h3 id="avgDailyHours">0h</h3>
+                        <p>Avg Daily Hours</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🎯</div>
+                    <div class="stat-content">
+                        <h3 id="monthlyProgress">0%</h3>
+                        <p>Monthly Goal</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">💪</div>
+                    <div class="stat-content">
+                        <h3 id="streakDays">0</h3>
+                        <p>Work Streak</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Day Details Modal -->
+    <div id="dayModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalDate">Date</h3>
+                <button class="modal-close" onclick="closeDayModal()">×</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Day details will be populated here -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn-edit" onclick="editShift()">Edit Shift</button>
+                <button class="btn-add" onclick="addShift()">Add Shift</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile menu toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">☰</button>
+    <div class="mobile-overlay" onclick="closeMobileMenu()"></div>
+
+    <!-- Scripts -->
+    <script src="calendar.js"></script>
+    
+    <script>
+        // Mobile menu functions
+        function toggleMobileMenu() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.mobile-overlay');
+            const toggle = document.querySelector('.mobile-menu-toggle');
+            
+            sidebar.classList.toggle('mobile-open');
+            overlay.classList.toggle('active');
+            toggle.innerHTML = sidebar.classList.contains('mobile-open') ? '✕' : '☰';
+        }
+
+        function closeMobileMenu() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.mobile-overlay');
+            const toggle = document.querySelector('.mobile-menu-toggle');
+            
+            sidebar.classList.remove('mobile-open');
+            overlay.classList.remove('active');
+            toggle.innerHTML = '☰';
+        }
+    </script>
+</body>
 </html>
